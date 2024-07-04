@@ -8,10 +8,10 @@ skip-lint = false
 blink_take_2 = "6kFaTqPvBH631tcQtQMfAYbpwxRe3e1bUrpy6Wo2aQyj"
 
 [registry]
-url = "https://api.apr.dev"
+url = "https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}"
 
 [provider]
-cluster = "Localnet"
+cluster = "mainnet"
 wallet = "/Users/akshatsharma/.config/solana/id.json"
 
 [scripts]
