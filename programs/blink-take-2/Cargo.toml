@@ -1,0 +1,24 @@
+[package]
+name = "blink-take-2"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "blink_take_2"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = { version = "0.29.0", features = ["init-if-needed"]} 
+solana-program = "1.17.10"
+chrono = "0.4.38"
+anchor-spl = "0.30.1"
+num-traits = "0.2.19"
+pyth-solana-receiver-sdk = "0.2.0"
