@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-// use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 pub mod state;
 pub mod instructions;
@@ -8,12 +7,10 @@ pub mod utils;
 
 use crate::instructions::*;
 
-declare_id!("6kFaTqPvBH631tcQtQMfAYbpwxRe3e1bUrpy6Wo2aQyj");
-
-pub const MARKET_CREATION_FEE: u64 = 100_000_000; // 0.1 SOL
+declare_id!("ER8kXHjaGcktGNSXRtQqWzphrxsD3oPFRHoySryZfWx9");
 
 #[program]
-pub mod prediction_blink {
+pub mod blink_take_2 {
     use super::*;
 
     pub fn create_market(
@@ -36,4 +33,31 @@ pub mod prediction_blink {
     pub fn claim_winnings(ctx: Context<ClaimWinnings>) -> Result<()> {
         instructions::claim_winnings(ctx)
     }
+
+    pub fn withdraw_team_fee(ctx: Context<WithdrawTeamFee>) -> Result<()> {
+        instructions::withdraw_team_fee(ctx)
+    }
+
+    pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
+        instructions::cancel_bet(ctx)
+    }
+    pub fn initialize_mock_pyth_feed(ctx: Context<InitializeMockPythFeed>, price: i64) -> Result<()> {
+        ctx.accounts.price_feed.price = price;
+        Ok(())
+    }
+
+}
+
+#[derive(Accounts)]
+pub struct InitializeMockPythFeed<'info> {
+    #[account(init, payer = payer, space = 8 + 8)]
+    pub price_feed: Account<'info, MockPythFeed>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+pub struct MockPythFeed {
+    pub price: i64,
 }
