@@ -1,22 +1,12 @@
 use anchor_lang::prelude::*;
-use pyth_solana_receiver_sdk::price_update::{get_feed_id_from_hex, PriceUpdateV2};
+use pyth_sdk_solana::{load_price_feed_from_account_info, PriceFeed};
 use crate::errors::ErrorCode;
 
-pub fn fetch_pyth_price(
-    price_update_info: &AccountInfo,
-    feed_id: &str,
-) -> Result<i64> {
-    let clock = Clock::get()?;
-    let feed_id = get_feed_id_from_hex(feed_id).map_err(|_| ErrorCode::PriceFetchFailed)?;
-
-    let price_update = PriceUpdateV2::try_from_slice(&price_update_info.data.borrow())
+pub fn fetch_pyth_price(price_feed_info: &AccountInfo) -> Result<i64> {
+    let price_feed: PriceFeed = load_price_feed_from_account_info(price_feed_info)
         .map_err(|_| ErrorCode::PriceFetchFailed)?;
     
-    const MAXIMUM_AGE: u64 = 60; // 60 seconds
-
-    let price = price_update.get_price_no_older_than(&clock, MAXIMUM_AGE, &feed_id)
-        .map_err(|_| ErrorCode::PriceFetchFailed)?;
-
+    let price = price_feed.get_price_unchecked();
     Ok(price.price)
 }
 
