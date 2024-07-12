@@ -26,3 +26,11 @@ pub struct UserPosition {
     pub no_shares: u64,
     pub claimed: bool,
 }
+
+#[account]
+pub struct PythFeedAccount {
+    pub price: i64,
+    pub conf: u64,
+    pub status: u32,
+    pub pub_slot: u64,
+}
