@@ -1,8 +1,10 @@
 use anchor_lang::prelude::*;
-use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
+use pyth_sdk_solana::{load_price_feed_from_account_info, PriceFeed};
+use pyth_sdk_solana::state::{AccountType, PriceAccount, PriceStatus};
+use std::mem::size_of;
 use crate::state::{Market, UserPosition};
 use crate::errors::ErrorCode;
-use crate::utils::{fetch_pyth_price, calculate_shares, calculate_refund_amount};
+use crate::utils::{calculate_shares, calculate_refund_amount};
 
 pub static TEAM_WALLET: Pubkey = solana_program::pubkey!("GerW59qscGWPJarbe8Px3sUVEXJ269Z9RQndYc9MWxCe");
 pub const MARKET_CREATION_FEE: u64 = 100_000_000; // 0.1 SOL
@@ -20,8 +22,7 @@ pub struct CreateMarket<'info> {
     pub market: Account<'info, Market>,
     #[account(mut)]
     pub authority: Signer<'info>,
-    /// CHECK: This account is checked in the instruction
-    pub price_update: AccountInfo<'info>,
+    pub price_feed: Account<'info, MockPythFeed>,
     #[account(mut, address = TEAM_WALLET)]
     /// CHECK: This is not dangerous because we don't read or write from this account
     pub team_wallet: UncheckedAccount<'info>,
@@ -51,7 +52,7 @@ pub struct ResolveMarket<'info> {
     pub market: Account<'info, Market>,
     pub authority: Signer<'info>,
     /// CHECK: This account is checked in the instruction
-    pub price_update: AccountInfo<'info>,
+    pub price_feed: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -110,7 +111,7 @@ pub fn create_market(
 ) -> Result<()> {
     let market = &mut ctx.accounts.market;
     market.memecoin_symbol = memecoin_symbol;
-    market.feed_id = feed_id.clone();
+    market.feed_id = feed_id;
     market.duration = duration;
     market.start_time = Clock::get()?.unix_timestamp as u64;
     market.total_yes_shares = 0;
@@ -120,9 +121,9 @@ pub fn create_market(
     market.total_funds = 0;
     market.authority = ctx.accounts.authority.key();
     
-    // Fetch and set initial price
-    let initial_price = fetch_pyth_price(&ctx.accounts.price_update, &feed_id)?;
-    market.initial_price = Some(initial_price);
+    // Fetch and set initial price from our simplified mock
+    let mock_price_feed = &ctx.accounts.price_feed;
+    market.initial_price = Some(mock_price_feed.price);
 
     // Set team fee unlock time (7 days after market resolution)
     market.team_fee_unlock_time = (market.start_time + market.duration + 7 * 24 * 60 * 60) as i64;
@@ -188,7 +189,6 @@ pub fn place_bet(ctx: Context<PlaceBet>, amount: u64, choice: bool) -> Result<()
 
 pub fn resolve_market(ctx: Context<ResolveMarket>) -> Result<()> {
     let market = &mut ctx.accounts.market;
-    let price_update = &ctx.accounts.price_update;
 
     // Ensure market duration has passed
     let current_time = Clock::get()?.unix_timestamp as u64;
@@ -200,7 +200,11 @@ pub fn resolve_market(ctx: Context<ResolveMarket>) -> Result<()> {
         return Err(ErrorCode::MarketAlreadyResolved.into());
     }
 
-    let final_price = fetch_pyth_price(price_update, &market.feed_id)?;
+    let price_feed: PriceFeed = load_price_feed_from_account_info(&ctx.accounts.price_feed)
+        .map_err(|_| ErrorCode::PriceFetchFailed)?;
+    let current_price = price_feed.get_price_unchecked();
+
+    let final_price = current_price.price;
     let initial_price = market.initial_price.ok_or(ErrorCode::InitialPriceNotSet)?;
 
     market.resolved = true;
@@ -309,4 +313,23 @@ pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
     user_position.no_shares = 0;
 
     Ok(())
+}
+
+#[account]
+pub struct MockPythFeed {
+    pub price: i64,
+}
+
+pub fn initialize_mock_pyth_feed(ctx: Context<InitializeMockPythFeed>, price: i64) -> Result<()> {
+    ctx.accounts.price_feed.price = price;
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct InitializeMockPythFeed<'info> {
+    #[account(init, payer = payer, space = 8 + 8)]
+    pub price_feed: Account<'info, MockPythFeed>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
