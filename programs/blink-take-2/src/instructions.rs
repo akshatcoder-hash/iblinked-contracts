@@ -315,6 +315,22 @@ pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
     Ok(())
 }
 
+#[derive(Accounts)]
+#[instruction(price: i64)]
+pub struct InitializeMockPythFeed<'info> {
+    #[account(
+        init,
+        payer = payer,
+        space = 8 + 8, // discriminator + i64
+        seeds = [b"mock_pyth_feed", payer.key().as_ref()],
+        bump
+    )]
+    pub price_feed: Account<'info, MockPythFeed>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 #[account]
 pub struct MockPythFeed {
     pub price: i64,
@@ -323,13 +339,4 @@ pub struct MockPythFeed {
 pub fn initialize_mock_pyth_feed(ctx: Context<InitializeMockPythFeed>, price: i64) -> Result<()> {
     ctx.accounts.price_feed.price = price;
     Ok(())
-}
-
-#[derive(Accounts)]
-pub struct InitializeMockPythFeed<'info> {
-    #[account(init, payer = payer, space = 8 + 8)]
-    pub price_feed: Account<'info, MockPythFeed>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
 }
