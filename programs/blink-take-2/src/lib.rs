@@ -1,13 +1,14 @@
 use anchor_lang::prelude::*;
 
-pub mod state;
-pub mod instructions;
+pub mod constants;
 pub mod errors;
+pub mod instructions;
+pub mod state;
 pub mod utils;
 
 use crate::instructions::*;
 
-declare_id!("ER8kXHjaGcktGNSXRtQqWzphrxsD3oPFRHoySryZfWx9");
+declare_id!("45vxfU6DwN8eSJoYwU7qRoawKLEJBgFAbJGEjJyhosWz");
 
 #[program]
 pub mod blink_take_2 {
@@ -20,6 +21,10 @@ pub mod blink_take_2 {
         duration: u64,
     ) -> Result<()> {
         instructions::create_market(ctx, memecoin_symbol, feed_id, duration)
+    }
+
+    pub fn create_user(ctx: Context<CreateUser>) -> Result<()> {
+        instructions::create_user(ctx)
     }
 
     pub fn place_bet(ctx: Context<PlaceBet>, amount: u64, choice: bool) -> Result<()> {
@@ -41,23 +46,8 @@ pub mod blink_take_2 {
     pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
         instructions::cancel_bet(ctx)
     }
-    pub fn initialize_mock_pyth_feed(ctx: Context<InitializeMockPythFeed>, price: i64) -> Result<()> {
-        ctx.accounts.price_feed.price = price;
-        Ok(())
+
+    pub fn initialize_price_feed(ctx: Context<InitializePriceFeed>, feed: Pubkey) -> Result<()> {
+        instructions::initialize_price_feed(ctx, feed)
     }
-
-}
-
-#[derive(Accounts)]
-pub struct InitializeMockPythFeed<'info> {
-    #[account(init, payer = payer, space = 8 + 8)]
-    pub price_feed: Account<'info, MockPythFeed>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[account]
-pub struct MockPythFeed {
-    pub price: i64,
 }
