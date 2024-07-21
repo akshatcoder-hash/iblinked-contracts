@@ -7,7 +7,8 @@ pub static MARKET_CREATION_AUTHORITY: Pubkey =
 
 pub const MARKET_CREATION_FEE: u64 = 100_000_000;
 pub const MIN_BET_AMOUNT: u64 = 1_000_000;
+pub const STALENESS_THRESHOLD: u64 = 60;
 
 pub const MARKET_PDA_SEED: &str = "market";
-pub const PRICE_FEED_PDA_SEED: &str = "price_feed";
+pub const PRICE_FEED_CONFIG_PDA_SEED: &str = "price_feed_config";
 pub const USER_POSITION_PDA_SEED: &str = "user_position";

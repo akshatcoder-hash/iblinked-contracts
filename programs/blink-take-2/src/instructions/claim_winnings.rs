@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::{TEAM_WALLET, USER_POSITION_PDA_SEED};
+use crate::constants::USER_POSITION_PDA_SEED;
 use crate::errors::ErrorCode;
 use crate::state::{Market, UserPosition};
 
@@ -18,9 +18,6 @@ pub struct ClaimWinnings<'info> {
     pub user_position: Account<'info, UserPosition>,
     #[account(mut)]
     pub user: Signer<'info>,
-    #[account(mut, address = TEAM_WALLET)]
-    /// CHECK: This is not dangerous because we don't read or write from this account
-    pub team_wallet: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 

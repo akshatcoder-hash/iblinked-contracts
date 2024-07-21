@@ -32,4 +32,8 @@ pub enum ErrorCode {
     MarketAlreadyStarted,
     #[msg("Team fee timelock has not expired")]
     TeamFeeTimelockNotExpired,
+    #[msg("Internal Pyth error")]
+    PythError,
+    #[msg("Program should not try to serialize a price account")]
+    TryToSerializePriceAccount,
 }

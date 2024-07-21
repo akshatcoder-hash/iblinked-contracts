@@ -19,3 +19,9 @@ wallet = "/home/mukesh/.config/solana/id.json"
 
 [scripts]
 test = "pnpm test"
+
+[test.validator]
+url = "https://devnet.helius-rpc.com/?api-key=7456e44a-bd84-4a66-8762-a0c6ae1ef70a"
+
+[[test.validator.clone]]
+address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"

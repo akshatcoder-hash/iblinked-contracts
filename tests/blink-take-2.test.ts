@@ -24,8 +24,11 @@ suite("blink-take-2", () => {
   const connection = provider.connection;
   const authority = provider.publicKey;
   const user = Keypair.generate();
+  const ethToUsdFeed = new PublicKey(
+    "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+  );
 
-  let priceFeedPDA: PublicKey;
+  let priceFeedConfigPDA: PublicKey;
   let marketPDA: PublicKey;
   let userPositionPDA: PublicKey;
 
@@ -41,25 +44,22 @@ suite("blink-take-2", () => {
   });
 
   test("initialize price feed with authorized wallet", async () => {
-    const initialPrice = new anchor.BN(50_000 * 1e6);
-
-    priceFeedPDA = pdaHelper.priceFeed();
+    priceFeedConfigPDA = pdaHelper.priceFeedConfig();
 
     try {
       await program.methods
-        .initializePriceFeed(initialPrice)
+        .initializePriceFeed(ethToUsdFeed)
         .accounts({
           payer: authority,
-          priceFeed: priceFeedPDA,
+          priceFeedConfig: priceFeedConfigPDA,
           systemProgram: SystemProgram.programId,
         })
         .rpc();
 
-      const priceFeedAccountData = await program.account.priceFeed.fetch(
-        priceFeedPDA
-      );
-      expect(priceFeedAccountData.price.toNumber()).toBe(
-        initialPrice.toNumber()
+      const priceFeedConfigAccountData =
+        await program.account.priceFeedConfig.fetch(priceFeedConfigPDA);
+      expect(priceFeedConfigAccountData.priceFeed.toString()).toBe(
+        ethToUsdFeed.toString()
       );
     } catch (err) {
       console.log(err);
@@ -68,16 +68,14 @@ suite("blink-take-2", () => {
   });
 
   test("initialize price feed with unauthorized wallet", async () => {
-    const initialPrice = new anchor.BN(50_000 * 1e6);
-
-    priceFeedPDA = pdaHelper.priceFeed();
+    priceFeedConfigPDA = pdaHelper.priceFeedConfig();
 
     try {
       await program.methods
-        .initializePriceFeed(initialPrice)
+        .initializePriceFeed(ethToUsdFeed)
         .accounts({
           payer: user.publicKey,
-          priceFeed: priceFeedPDA,
+          priceFeedConfig: priceFeedConfigPDA,
           systemProgram: SystemProgram.programId,
         })
         .signers([user])
@@ -102,18 +100,18 @@ suite("blink-take-2", () => {
 
   test("create market with authorized creator", async () => {
     const memeCoinSymbol = crypto.randomBytes(2).toString("hex");
-    const initialPrice = new anchor.BN(50_000 * 1e6);
-    const duration = new anchor.BN(24 * 60 * 60);
+    const duration = new anchor.BN(10);
 
     marketPDA = pdaHelper.market(memeCoinSymbol);
 
     try {
       await program.methods
-        .createMarket(memeCoinSymbol, priceFeedPDA.toBase58(), duration)
+        .createMarket(memeCoinSymbol, priceFeedConfigPDA.toBase58(), duration)
         .accounts({
           authority,
           market: marketPDA,
-          priceFeed: priceFeedPDA,
+          priceFeedConfig: priceFeedConfigPDA,
+          priceFeed: ethToUsdFeed,
           teamWallet: TEAM_WALLET,
           systemProgram: SystemProgram.programId,
         })
@@ -121,12 +119,11 @@ suite("blink-take-2", () => {
 
       const marketAccountData = await program.account.market.fetch(marketPDA);
       expect(marketAccountData.memecoinSymbol).toBe(memeCoinSymbol);
-      expect(marketAccountData.feedId.toString()).toBe(priceFeedPDA.toString());
+      expect(marketAccountData.feedId.toString()).toBe(
+        priceFeedConfigPDA.toString()
+      );
       expect(marketAccountData.authority.toString()).toBe(authority.toString());
       expect(marketAccountData.duration.toNumber()).toBe(duration.toNumber());
-      expect(marketAccountData.initialPrice?.toNumber()).toBe(
-        initialPrice.toNumber()
-      );
       expect(marketAccountData.resolved).toBe(false);
     } catch (err) {
       console.log(err);
@@ -136,15 +133,16 @@ suite("blink-take-2", () => {
 
   test("create market with unauthorized creator", async () => {
     const memeCoinSymbol = crypto.randomBytes(2).toString("hex");
-    const duration = new anchor.BN(24 * 60 * 60);
+    const duration = new anchor.BN(10);
 
     try {
       await program.methods
-        .createMarket(memeCoinSymbol, priceFeedPDA.toBase58(), duration)
+        .createMarket(memeCoinSymbol, priceFeedConfigPDA.toBase58(), duration)
         .accounts({
           authority: user.publicKey,
           market: pdaHelper.market(memeCoinSymbol),
-          priceFeed: priceFeedPDA,
+          priceFeedConfig: priceFeedConfigPDA,
+          priceFeed: ethToUsdFeed,
           teamWallet: TEAM_WALLET,
           systemProgram: SystemProgram.programId,
         })
@@ -387,12 +385,51 @@ suite("blink-take-2", () => {
     }
   });
 
-  // TODO: ask akshat regarding how final price is updated in price feed account? and whether to create new instruction to update the price in price feed account or it's automatically done by pyth?
-  test.skip("resolve market");
+  test("resolve market", async () => {
+    try {
+      await program.methods
+        .resolveMarket()
+        .accounts({
+          authority,
+          market: marketPDA,
+          priceFeedConfig: priceFeedConfigPDA,
+          priceFeed: ethToUsdFeed,
+        })
+        .rpc();
 
-  // NOTE: requires resolve market test to be implemented
-  test.skip("claim winnings");
+      const marketAccountData = await program.account.market.fetch(marketPDA);
+      expect(marketAccountData.resolved).toBe(true);
+      expect(marketAccountData.winningOutcome).not.toBeNull;
+    } catch (err) {
+      console.log(err);
+      assert.fail("unexpected error");
+    }
+  });
 
-  // NOTE: requires resolve market test to be implemented
+  test("claim winnings", async () => {
+    try {
+      await program.methods
+        .claimWinnings()
+        .accounts({
+          user: user.publicKey,
+          userPosition: userPositionPDA,
+          market: marketPDA,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([user])
+        .rpc();
+
+      const userPositionAccountData = await program.account.userPosition.fetch(
+        userPositionPDA
+      );
+      expect(userPositionAccountData.claimed).toBe(true);
+      expect(userPositionAccountData.yesShares.toNumber()).toBe(0);
+      expect(userPositionAccountData.noShares.toNumber()).toBe(0);
+    } catch (err) {
+      console.log(err);
+      assert.fail("unexpected error");
+    }
+  });
+
   test.skip("withdraw team fees");
 });
