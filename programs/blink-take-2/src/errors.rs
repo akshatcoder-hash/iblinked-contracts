@@ -4,8 +4,6 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Market is not active")]
     MarketNotActive,
-    #[msg("Invalid Bet Choice")]
-    InvalidBetChoice,
     #[msg("Insufficient Funds")]
     InsufficientFunds,
     #[msg("The market is already resolved.")]

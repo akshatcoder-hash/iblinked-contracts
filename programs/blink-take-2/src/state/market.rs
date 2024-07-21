@@ -17,20 +17,3 @@ pub struct Market {
     pub team_fee_paid: bool,
     pub team_fee_unlock_time: i64,
 }
-
-#[account]
-pub struct UserPosition {
-    pub market: Pubkey,
-    pub user: Pubkey,
-    pub yes_shares: u64,
-    pub no_shares: u64,
-    pub claimed: bool,
-}
-
-#[account]
-pub struct PythFeedAccount {
-    pub price: i64,
-    pub conf: u64,
-    pub status: u32,
-    pub pub_slot: u64,
-}
