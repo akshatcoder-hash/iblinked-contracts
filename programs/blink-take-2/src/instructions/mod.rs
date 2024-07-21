@@ -5,6 +5,7 @@ pub mod create_user;
 pub mod init_price_feed;
 pub mod place_bet;
 pub mod resolve_market;
+pub mod update_price_feed;
 pub mod withdraw_team_fees;
 
 pub use cancel_bet::*;
@@ -14,4 +15,5 @@ pub use create_user::*;
 pub use init_price_feed::*;
 pub use place_bet::*;
 pub use resolve_market::*;
+pub use update_price_feed::*;
 pub use withdraw_team_fees::*;

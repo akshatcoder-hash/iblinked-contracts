@@ -50,4 +50,8 @@ pub mod blink_take_2 {
     pub fn initialize_price_feed(ctx: Context<InitializePriceFeed>, price: i64) -> Result<()> {
         instructions::initialize_price_feed(ctx, price)
     }
+
+    pub fn update_price_feed(ctx: Context<UpdatePriceFeed>, price: i64) -> Result<()> {
+        instructions::update_price_feed(ctx, price)
+    }
 }

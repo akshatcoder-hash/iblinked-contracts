@@ -1,9 +1,9 @@
 use crate::errors::ErrorCode;
 use anchor_lang::prelude::*;
-use pyth_sdk_solana::{state::SolanaPriceAccount, PriceFeed};
+use pyth_sdk_solana::state::SolanaPriceAccount;
 
 pub fn fetch_pyth_price(price_feed_info: &AccountInfo) -> Result<i64> {
-    let price_feed: PriceFeed = SolanaPriceAccount::account_info_to_feed(price_feed_info)
+    let price_feed = SolanaPriceAccount::account_info_to_feed(price_feed_info)
         .map_err(|_| ErrorCode::PriceFetchFailed)?;
 
     let price = price_feed.get_price_unchecked();
