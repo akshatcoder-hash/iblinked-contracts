@@ -34,7 +34,7 @@ pub fn calculate_refund_amount(
     total_duration: u64,
 ) -> u64 {
     if elapsed_time >= total_duration {
-        return 0; // No refund if the market has ended
+        return 0;
     }
 
     let time_ratio = (total_duration - elapsed_time) as f64 / total_duration as f64;

@@ -33,7 +33,8 @@ pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
     }
 
     let total_shares = user_position.yes_shares + user_position.no_shares;
-    let refund_amount = calculate_refund_amount(total_shares, 0, market.duration);
+    let elapsed_time = current_time - market.start_time;
+    let refund_amount = calculate_refund_amount(total_shares, elapsed_time, market.duration);
 
     market.total_yes_shares -= user_position.yes_shares;
     market.total_no_shares -= user_position.no_shares;
