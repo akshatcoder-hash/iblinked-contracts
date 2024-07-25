@@ -1,17 +1,31 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::{MIN_BET_AMOUNT, USER_POSITION_PDA_SEED};
+use crate::constants::{
+    MARKET_CREATION_AUTHORITY, MARKET_PDA_SEED, MIN_BET_AMOUNT, USER_POSITION_PDA_SEED,
+};
 use crate::errors::ErrorCode;
 use crate::state::{Market, UserPosition};
 use crate::utils::calculate_shares;
 
 #[derive(Accounts)]
 pub struct PlaceBet<'info> {
-    #[account(mut)]
+    #[account(
+      mut,
+      seeds = [
+        MARKET_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.as_ref(), 
+        market.memecoin_symbol.as_bytes()
+      ],
+      bump
+    )]
     pub market: Account<'info, Market>,
     #[account(
         mut,
-        seeds = [USER_POSITION_PDA_SEED.as_bytes(), market.key().as_ref(), user.key().as_ref()],
+        seeds = [
+          USER_POSITION_PDA_SEED.as_bytes(), 
+          market.key().as_ref(), 
+          user.key().as_ref()
+        ],
         bump,
         has_one = market,
         has_one = user

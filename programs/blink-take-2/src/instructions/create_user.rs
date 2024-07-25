@@ -10,7 +10,11 @@ pub struct CreateUser<'info> {
         init,
         payer = user,
         space = 8 + std::mem::size_of::<UserPosition>(),
-        seeds = [USER_POSITION_PDA_SEED.as_bytes(), market.key().as_ref(), user.key().as_ref()],
+        seeds = [
+          USER_POSITION_PDA_SEED.as_bytes(), 
+          market.key().as_ref(), 
+          user.key().as_ref()
+        ],
         bump
     )]
     pub user_position: Account<'info, UserPosition>,

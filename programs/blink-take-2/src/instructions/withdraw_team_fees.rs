@@ -1,12 +1,21 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::TEAM_WALLET;
+use crate::constants::{TEAM_WALLET, MARKET_PDA_SEED, MARKET_CREATION_AUTHORITY};
 use crate::errors::ErrorCode;
 use crate::state::Market;
 
 #[derive(Accounts)]
 pub struct WithdrawTeamFee<'info> {
-    #[account(mut, has_one = authority)]
+    #[account(
+      mut,
+      seeds = [
+        MARKET_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.as_ref(), 
+        market.memecoin_symbol.as_bytes()
+      ],
+      bump, 
+      has_one = authority
+    )]
     pub market: Account<'info, Market>,
     pub authority: Signer<'info>,
     #[account(mut, address = TEAM_WALLET)]

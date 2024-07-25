@@ -5,13 +5,17 @@ use crate::constants::PRICE_FEED_CONFIG_PDA_SEED;
 use crate::state::PriceFeedConfig;
 
 #[derive(Accounts)]
-#[instruction(price: i64)]
+#[instruction(feed: Pubkey)]
 pub struct InitializePriceFeed<'info> {
     #[account(
         init,
         payer = payer,
         space = 8 + std::mem::size_of::<PriceFeedConfig>(),
-        seeds = [PRICE_FEED_CONFIG_PDA_SEED.as_bytes(), payer.key().as_ref()],
+        seeds = [
+          PRICE_FEED_CONFIG_PDA_SEED.as_bytes(), 
+          payer.key().as_ref(), 
+          feed.key().as_ref()
+        ],
         bump
     )]
     pub price_feed_config: Account<'info, PriceFeedConfig>,

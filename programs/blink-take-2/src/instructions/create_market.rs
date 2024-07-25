@@ -1,8 +1,8 @@
 use anchor_lang::prelude::*;
 
 use crate::state::{Market, PriceFeed, PriceFeedConfig};
-use crate::constants::{TEAM_WALLET, MARKET_PDA_SEED, MARKET_CREATION_FEE, MARKET_CREATION_AUTHORITY, STALENESS_THRESHOLD};
-use crate::errors::ErrorCode;
+use crate::constants::{TEAM_WALLET, MARKET_PDA_SEED, MARKET_CREATION_FEE, MARKET_CREATION_AUTHORITY, PRICE_FEED_CONFIG_PDA_SEED};
+use crate::utils::fetch_pyth_price;
 
 #[derive(Accounts)]
 #[instruction(memecoin_symbol: String)]
@@ -11,10 +11,22 @@ pub struct CreateMarket<'info> {
         init, 
         payer = authority, 
         space = 8 + std::mem::size_of::<Market>(),
-        seeds = [MARKET_PDA_SEED.as_bytes(), authority.key().as_ref(), memecoin_symbol.as_bytes()],
+        seeds = [
+          MARKET_PDA_SEED.as_bytes(),
+          authority.key().as_ref(), 
+          memecoin_symbol.as_bytes()
+        ],
         bump
     )]
     pub market: Account<'info, Market>,
+    #[account(
+      seeds = [
+        PRICE_FEED_CONFIG_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.key().as_ref(), 
+        price_feed.key().as_ref()
+      ],
+      bump
+    )]
     pub price_feed_config: Account<'info, PriceFeedConfig>,
     #[account(address = price_feed_config.price_feed)]
     pub price_feed: Account<'info, PriceFeed>,
@@ -34,8 +46,9 @@ pub fn create_market(
 ) -> Result<()> {
   let market = &mut ctx.accounts.market;
   let price_feed = &ctx.accounts.price_feed;
+
   let current_timestamp = Clock::get()?.unix_timestamp;
-  let price = price_feed.get_price_no_older_than(current_timestamp, STALENESS_THRESHOLD).ok_or(ErrorCode::PriceFetchFailed)?;
+  let price = fetch_pyth_price(&price_feed.to_account_info())?;
 
   market.memecoin_symbol = memecoin_symbol;
   market.feed_id = feed_id;
@@ -47,7 +60,7 @@ pub fn create_market(
   market.winning_outcome = None;
   market.total_funds = 0;
   market.authority = ctx.accounts.authority.key();
-  market.initial_price = Some(price.price);
+  market.initial_price = Some(price);
   
   // set team fee unlock time (7 days after market resolution)
   market.team_fee_unlock_time = (market.start_time + market.duration + 7 * 24 * 60 * 60) as i64;
