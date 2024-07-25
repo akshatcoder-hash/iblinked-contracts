@@ -1,13 +1,20 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::USER_POSITION_PDA_SEED;
-use crate::errors::ErrorCode;
+use crate::constants::{USER_POSITION_PDA_SEED, MARKET_PDA_SEED, MARKET_CREATION_AUTHORITY};
 use crate::state::{Market, UserPosition};
 use crate::utils::calculate_refund_amount;
 
 #[derive(Accounts)]
 pub struct CancelBet<'info> {
-    #[account(mut)]
+    #[account(
+      mut,
+      seeds = [
+        MARKET_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.as_ref(), 
+        market.memecoin_symbol.as_bytes()
+      ],
+      bump
+    )]
     pub market: Account<'info, Market>,
     #[account(
         mut,
@@ -26,11 +33,12 @@ pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
     let market = &mut ctx.accounts.market;
     let user_position = &mut ctx.accounts.user_position;
 
-    // TODO: ask akshat regarding this - what's the best solution for this such that users can't game the system?
     let current_time = Clock::get()?.unix_timestamp as u64;
-    if current_time >= market.start_time {
-        return Err(ErrorCode::MarketAlreadyStarted.into());
-    }
+
+    // TODO: ask akshat regarding this - what's the best solution for this such that users can't game the system? commented it for now
+    // if current_time >= market.start_time {
+    //     return Err(ErrorCode::MarketAlreadyStarted.into());
+    // }
 
     let total_shares = user_position.yes_shares + user_position.no_shares;
     let elapsed_time = current_time - market.start_time;

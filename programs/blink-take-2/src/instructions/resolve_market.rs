@@ -1,16 +1,33 @@
 use anchor_lang::prelude::*;
 
-use crate::constants::MARKET_CREATION_AUTHORITY;
+use crate::constants::{MARKET_CREATION_AUTHORITY, MARKET_PDA_SEED, PRICE_FEED_CONFIG_PDA_SEED};
 use crate::errors::ErrorCode;
 use crate::state::{Market, PriceFeed, PriceFeedConfig};
 use crate::utils::fetch_pyth_price;
 
 #[derive(Accounts)]
 pub struct ResolveMarket<'info> {
-    #[account(mut, has_one = authority)]
+    #[account(
+      mut,  
+      seeds = [
+        MARKET_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.as_ref(), 
+        market.memecoin_symbol.as_bytes()
+      ],
+      bump,
+      has_one = authority
+    )]
     pub market: Account<'info, Market>,
     #[account(address = MARKET_CREATION_AUTHORITY)]
     pub authority: Signer<'info>,
+    #[account(
+      seeds = [
+        PRICE_FEED_CONFIG_PDA_SEED.as_bytes(), 
+        MARKET_CREATION_AUTHORITY.key().as_ref(), 
+        price_feed.key().as_ref()
+      ],
+      bump
+    )]
     pub price_feed_config: Account<'info, PriceFeedConfig>,
     #[account(address = price_feed_config.price_feed)]
     pub price_feed: Account<'info, PriceFeed>,

@@ -12,11 +12,12 @@ export class PDAHelper {
     this.program = program;
   }
 
-  priceFeedConfig() {
+  priceFeedConfig(feed: PublicKey) {
     let [pda, _] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("price_feed_config"),
         this.provider.wallet.publicKey.toBuffer(),
+        feed.toBuffer(),
       ],
       this.program.programId
     );

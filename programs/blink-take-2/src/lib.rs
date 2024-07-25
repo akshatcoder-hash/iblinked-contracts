@@ -8,7 +8,7 @@ pub mod utils;
 
 use crate::instructions::*;
 
-declare_id!("45vxfU6DwN8eSJoYwU7qRoawKLEJBgFAbJGEjJyhosWz");
+declare_id!("Ho8Lu8Qp1uYwc988AN7qMv8yybtLqysmrVMvLtoLgyPW");
 
 #[program]
 pub mod blink_take_2 {

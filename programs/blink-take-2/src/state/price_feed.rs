@@ -15,9 +15,10 @@ pub struct PriceFeed(pyth_sdk_solana::PriceFeed);
 
 impl anchor_lang::Owner for PriceFeed {
     fn owner() -> Pubkey {
-        // pyth mainnet oracle address
         // https://docs.pyth.network/price-feeds/contract-addresses/solana#legacy-oracle
-        let oracle_addr = "FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH";
+        // pyth devnet oracle address = gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s
+        // pyth mainnet oracle address = FsJ3A3u2vn5cTVofAjvy6y5kwABJAqYWpe4975bi2epH
+        let oracle_addr = "gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s";
         return Pubkey::from_str(&oracle_addr).unwrap();
     }
 }

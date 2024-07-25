@@ -24,9 +24,7 @@ suite("blink-take-2", () => {
   const connection = provider.connection;
   const authority = provider.publicKey;
   const user = Keypair.generate();
-  const ethToUsdFeed = new PublicKey(
-    "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
-  );
+  const feed = new PublicKey("J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix");
 
   let priceFeedConfigPDA: PublicKey;
   let marketPDA: PublicKey;
@@ -44,11 +42,11 @@ suite("blink-take-2", () => {
   });
 
   test("initialize price feed with authorized wallet", async () => {
-    priceFeedConfigPDA = pdaHelper.priceFeedConfig();
+    priceFeedConfigPDA = pdaHelper.priceFeedConfig(feed);
 
     try {
       await program.methods
-        .initializePriceFeed(ethToUsdFeed)
+        .initializePriceFeed(feed)
         .accounts({
           payer: authority,
           priceFeedConfig: priceFeedConfigPDA,
@@ -59,7 +57,7 @@ suite("blink-take-2", () => {
       const priceFeedConfigAccountData =
         await program.account.priceFeedConfig.fetch(priceFeedConfigPDA);
       expect(priceFeedConfigAccountData.priceFeed.toString()).toBe(
-        ethToUsdFeed.toString()
+        feed.toString()
       );
     } catch (err) {
       console.log(err);
@@ -68,11 +66,11 @@ suite("blink-take-2", () => {
   });
 
   test("initialize price feed with unauthorized wallet", async () => {
-    priceFeedConfigPDA = pdaHelper.priceFeedConfig();
+    priceFeedConfigPDA = pdaHelper.priceFeedConfig(feed);
 
     try {
       await program.methods
-        .initializePriceFeed(ethToUsdFeed)
+        .initializePriceFeed(feed)
         .accounts({
           payer: user.publicKey,
           priceFeedConfig: priceFeedConfigPDA,
@@ -111,7 +109,7 @@ suite("blink-take-2", () => {
           authority,
           market: marketPDA,
           priceFeedConfig: priceFeedConfigPDA,
-          priceFeed: ethToUsdFeed,
+          priceFeed: feed,
           teamWallet: TEAM_WALLET,
           systemProgram: SystemProgram.programId,
         })
@@ -142,7 +140,7 @@ suite("blink-take-2", () => {
           authority: user.publicKey,
           market: pdaHelper.market(memeCoinSymbol),
           priceFeedConfig: priceFeedConfigPDA,
-          priceFeed: ethToUsdFeed,
+          priceFeed: feed,
           teamWallet: TEAM_WALLET,
           systemProgram: SystemProgram.programId,
         })
@@ -393,7 +391,7 @@ suite("blink-take-2", () => {
           authority,
           market: marketPDA,
           priceFeedConfig: priceFeedConfigPDA,
-          priceFeed: ethToUsdFeed,
+          priceFeed: feed,
         })
         .rpc();
 

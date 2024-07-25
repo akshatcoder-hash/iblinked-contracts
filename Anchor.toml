@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-blink_take_2 = "45vxfU6DwN8eSJoYwU7qRoawKLEJBgFAbJGEjJyhosWz"
+blink_take_2 = "Ho8Lu8Qp1uYwc988AN7qMv8yybtLqysmrVMvLtoLgyPW"
 
 [programs.devnet]
-blink_take_2 = "45vxfU6DwN8eSJoYwU7qRoawKLEJBgFAbJGEjJyhosWz"
+blink_take_2 = "Ho8Lu8Qp1uYwc988AN7qMv8yybtLqysmrVMvLtoLgyPW"
 
 [registry]
 url = "https://api.apr.dev"
@@ -24,4 +24,12 @@ test = "pnpm test"
 url = "https://devnet.helius-rpc.com/?api-key=7456e44a-bd84-4a66-8762-a0c6ae1ef70a"
 
 [[test.validator.clone]]
-address = "EdVCmQ9FSPcVe5YySXDPCRmc8aDQLKJ9xvYBMZPie1Vw"
+address = "J83w4HKfqxwcq3BEMMkPFSppX3gqekLyLJBexebFVkix"
+
+[[test.genesis]]
+address = "pythWSnswVUd12oZpeFP8e9CVaEqJg25g1Vtc2biRsT"
+program = "config/sb-pf.so"
+
+[[test.genesis]]
+address = "gSbePebfvPy7tRqimPoVecS2UsBvYv46ynrzWocc92s"
+program = "config/sb-orl.so"
