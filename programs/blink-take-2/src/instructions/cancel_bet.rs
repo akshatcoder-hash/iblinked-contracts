@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 use crate::constants::{USER_POSITION_PDA_SEED, MARKET_PDA_SEED, MARKET_CREATION_AUTHORITY};
 use crate::state::{Market, UserPosition};
 use crate::utils::calculate_refund_amount;
+use crate::errors::ErrorCode;
 
 #[derive(Accounts)]
 pub struct CancelBet<'info> {
