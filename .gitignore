@@ -1,9 +1,8 @@
 .env
-.anchor
-.DS_Store
+keypair.json
 target
-**/*.rs.bk
 node_modules
+.anchor
 test-ledger
-.yarn
 external-programs
+**/*.rs.bk
