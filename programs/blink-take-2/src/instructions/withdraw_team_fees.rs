@@ -32,7 +32,7 @@ pub fn withdraw_team_fee(ctx: Context<WithdrawTeamFee>) -> Result<()> {
         return Err(ErrorCode::TeamFeeTimelockNotExpired.into());
     }
 
-    let team_fee = (market.total_funds as u128 * 5) / 100;
+    let team_fee = market.to_account_info().lamports() * 5 / 100;
 
     **market.to_account_info().try_borrow_mut_lamports()? -= team_fee as u64;
     **ctx
@@ -42,7 +42,6 @@ pub fn withdraw_team_fee(ctx: Context<WithdrawTeamFee>) -> Result<()> {
         .try_borrow_mut_lamports()? += team_fee as u64;
 
     market.team_fee_paid = true;
-    market.total_funds -= team_fee as u64;
 
     Ok(())
 }

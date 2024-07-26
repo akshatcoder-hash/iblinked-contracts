@@ -350,8 +350,7 @@ suite("blink-take-2", () => {
     );
   });
 
-  // NOTE: test wouldn't work, refer to the comment in cancel_bet.rs file
-  test.skip("cancel bet", async () => {
+  test("cancel bet", async () => {
     try {
       await program.methods
         .cancelBet()

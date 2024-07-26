@@ -58,7 +58,6 @@ pub fn create_market(
   market.total_no_shares = 0;
   market.resolved = false;
   market.winning_outcome = None;
-  market.total_funds = 0;
   market.authority = ctx.accounts.authority.key();
   market.initial_price = Some(price);
   

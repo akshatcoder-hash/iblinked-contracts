@@ -63,7 +63,6 @@ pub fn place_bet(ctx: Context<PlaceBet>, amount: u64, choice: bool) -> Result<()
         user_position.no_shares += shares;
     }
 
-    market.total_funds += amount;
 
     let cpi_context = CpiContext::new(
         ctx.accounts.system_program.to_account_info(),

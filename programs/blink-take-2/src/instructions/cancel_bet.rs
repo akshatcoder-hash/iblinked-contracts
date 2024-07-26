@@ -38,16 +38,17 @@ pub fn cancel_bet(ctx: Context<CancelBet>) -> Result<()> {
     let elapsed_time = current_time - market.start_time;
     let six_hours_in_seconds = 6 * 60 * 60;
 
-    if elapsed_time <= six_hours_in_seconds {
+    if elapsed_time > six_hours_in_seconds {
         return Err(ErrorCode::MarketAlreadyStarted.into());
     }
 
     let total_shares = user_position.yes_shares + user_position.no_shares;
+
+    // FIXME: is this correct? why is the 1.5 exponent thingy added?
     let refund_amount = calculate_refund_amount(total_shares, elapsed_time, market.duration);
 
     market.total_yes_shares -= user_position.yes_shares;
     market.total_no_shares -= user_position.no_shares;
-    market.total_funds -= refund_amount;
 
     **market.to_account_info().try_borrow_mut_lamports()? -= refund_amount;
     **ctx
