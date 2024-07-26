@@ -37,10 +37,10 @@ pub fn resolve_market(ctx: Context<ResolveMarket>) -> Result<()> {
     let market = &mut ctx.accounts.market;
     let price_feed = &ctx.accounts.price_feed.to_account_info();
 
-    let current_time = Clock::get()?.unix_timestamp as u64;
-    if current_time <= market.start_time + market.duration {
-        return Err(ErrorCode::MarketNotExpired.into());
-    }
+    // let current_time = Clock::get()?.unix_timestamp as u64;
+    // if current_time <= market.start_time + market.duration {
+    //     return Err(ErrorCode::MarketNotExpired.into());
+    // }
 
     if market.resolved {
         return Err(ErrorCode::MarketAlreadyResolved.into());

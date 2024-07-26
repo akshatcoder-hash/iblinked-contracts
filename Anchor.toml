@@ -5,10 +5,10 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-blink_take_2 = "Ho8Lu8Qp1uYwc988AN7qMv8yybtLqysmrVMvLtoLgyPW"
+blink_take_2 = "HiXkrawYru9nPuyddUTD83xWjRb236r3NVLp67EeuGSw"
 
 [programs.devnet]
-blink_take_2 = "Ho8Lu8Qp1uYwc988AN7qMv8yybtLqysmrVMvLtoLgyPW"
+blink_take_2 = "HiXkrawYru9nPuyddUTD83xWjRb236r3NVLp67EeuGSw"
 
 [registry]
 url = "https://api.apr.dev"

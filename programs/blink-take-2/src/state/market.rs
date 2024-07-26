@@ -10,7 +10,6 @@ pub struct Market {
     pub total_no_shares: u64,
     pub resolved: bool,
     pub winning_outcome: Option<bool>,
-    pub total_funds: u64,
     pub authority: Pubkey,
     pub initial_price: Option<i64>,
     pub final_price: Option<i64>,

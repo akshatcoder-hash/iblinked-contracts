@@ -47,25 +47,28 @@ pub fn claim_winnings(ctx: Context<ClaimWinnings>) -> Result<()> {
 
     let winning_outcome = market.winning_outcome.ok_or(ErrorCode::MarketNotResolved)?;
 
-    let winning_shares = if winning_outcome {
+    let winning_shares: u64 = if winning_outcome {
         user_position.yes_shares
     } else {
         user_position.no_shares
     };
 
-    let total_winning_shares = if winning_outcome {
+    let total_winning_shares: u64 = if winning_outcome {
         market.total_yes_shares
     } else {
         market.total_no_shares
     };
 
-    let total_funds = market.total_funds as u128;
+    let total_funds = market.to_account_info().lamports();
     let winnings_pool = (total_funds * 95) / 100;
     let team_fee = total_funds - winnings_pool;
 
-    let user_share = (winning_shares as u128 * winnings_pool / total_winning_shares as u128) as u64;
+    let user_share = match total_winning_shares {
+      0 => 0,
+      _ => winning_shares * winnings_pool / total_winning_shares
+    };
 
-    if market.total_funds < user_share + team_fee as u64 {
+    if total_funds < user_share + team_fee {
         return Err(ErrorCode::InsufficientMarketFunds.into());
     }
 
@@ -79,8 +82,6 @@ pub fn claim_winnings(ctx: Context<ClaimWinnings>) -> Result<()> {
     user_position.claimed = true;
     user_position.yes_shares = 0;
     user_position.no_shares = 0;
-
-    market.total_funds -= user_share;
 
     Ok(())
 }
