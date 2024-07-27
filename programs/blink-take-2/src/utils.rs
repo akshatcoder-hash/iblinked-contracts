@@ -22,10 +22,7 @@ pub fn validate_active_period(start_time: u64, duration: u64) -> Result<()> {
 }
 
 pub fn calculate_shares(amount: u64) -> u64 {
-    const BASE: f64 = 1_000_000.0;
-    const EXPONENT: f64 = 1.1;
-
-    ((amount as f64 / BASE).powf(EXPONENT) * BASE) as u64
+    amount
 }
 
 pub fn calculate_refund_amount(
